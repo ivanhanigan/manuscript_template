@@ -1,0 +1,176 @@
+#+TITLE:manuscript template
+#+AUTHOR: Ivan Hanigan
+#+email: ivan.hanigan@anu.edu.au
+-----
+
+* head
+#+begin_src R :session *R* :tangle manuscript_template.Rmd :exports none :eval no
+  ---
+  title: "Manuscript Template"
+  author:  
+  - name: Ivan C. Hanigan
+    affilnum: '1,2'
+    email: ivan.hanigan@anu.edu.au  
+  - name: Another Author 
+    affilnum: 2
+  affiliation:
+  - affilnum: 1
+    affil: National Centre for Epidemiology and Population Health (ANU)
+  - affilnum: 2
+    affil: Big Name University, Department of R, City, BN, 01020, USA
+  header-includes:
+    - \usepackage{graphicx}
+    - \usepackage{url}   
+  output:
+    pdf_document:
+      fig_caption: yes
+      keep_tex: yes
+      number_sections: yes
+      template: components/manuscript.latex
+    html_document: null
+    word_document: null
+  fontsize: 11pt
+  capsize: normalsize
+  csl: meemodified.csl
+  documentclass: article
+  classoption: a4paper
+  spacing: singlespacing
+  linenumbers: no
+  bibliography: references.bib
+  abstract: no
+  ---
+  ```{r echo = F, eval=F, results="hide"}
+#+end_src  
+* run markdown 
+#+name:manuscript_template
+#+begin_src R :session *R* :tangle manuscript_template.Rmd :exports none :eval yes
+
+  setwd("~/Dropbox/tools/LaTeX templates/manuscript_template")      
+  library(rmarkdown)
+  library(knitr)
+  library(knitcitations)
+  library(bibtex)
+  cleanbib()
+  # Takes long time to read mendeley bib so set to only do this if bib is note present
+  # add new citation to mendeley requires re-reading that bib, so remove it
+  # rm("bib")
+  cite_options(citation_format = "pandoc", check.entries=FALSE)
+   
+  rmarkdown::render("manuscript_template.Rmd", "pdf_document")
+  # browseURL("manuscript_template.pdf")
+  
+  #rmarkdown::render("manuscript_template.Rmd", "html_document")  
+  # browseURL("manuscript_template.html")
+
+#+end_src
+
+#+RESULTS: manuscript_template
+: /home/ivan_hanigan/Dropbox/tools/LaTeX templates/manuscript_template/manuscript_template.pdf
+
+* read bib
+#+begin_src R :session *R* :tangle manuscript_template.Rmd :exports none :eval no :padline no
+  ```  
+  ```{r, echo = F, results = 'hide'}
+  # load
+  if(!exists("bib")){
+  # from mendeley
+  # bib <- read.bibtex("~/references/library.bib")
+  # from projdir
+  bib <- read.bibtex("references.bib")
+  }
+  ```
+  
+#+end_src
+
+* Introduction
+#+name:intro
+#+begin_src R :session *R* :tangle manuscript_template.Rmd :exports none :eval no :padline yes 
+  # Introduction
+  This is an explanation of the framework `r citep(bib[["McMichael2015"]])` and this is the reason we need it `r citep(bib[["McMichael2013"]])`.
+  This is a paper I wrote `r citep( bib[["Hanigan2012e"]])`.
+  
+  ## Subsection
+  My work is focussed on developing evidence based data analysis pipelines for eco-social epidemiology.
+  
+  
+#+end_src
+
+* visualising data analysis pipelines
+#+begin_src R :session *R* :tangle manuscript_template.Rmd :exports none :eval no
+  ## Visualisation techniques
+  
+  ### Make a list of steps, inputs and outputs
+  
+  A very simple example of a pipeline is shown in Table
+  \ref{tab:TablePipe1}.  The steps and data listed in Table
+  \ref{tab:TablePipe1} can be visualised using the `newnode` function
+  described above in case study 2.  This creates the graph of this pipeline
+  shown in Figure \ref{fig:FigSteps}.  As the analysis progresses
+  through the phases of testing, refinement and final versions. The
+  linked table and graphical depiction can be very helpful for reference
+  by the analyst.  The optional setting to define a status of each step
+  (TODO, DONE, WONTDO) can be used to add colour, and show steps that
+  remain to be done.  The addition of short summary descriptions are
+  also very useful for orienting oneself to the required tasks and their
+  priorities.  Such flow chart diagrams can be printed up on large
+  sheets of paper and stuck on the wall beside a computer workstation
+  for use in day-to-day work.
+  
+  ```{r TablePipe1, results='asis', echo=FALSE}
+  library(stringr)
+  steps <- read.csv(textConnection('
+  CLUSTER ,  STEP    , INPUTS                  , OUTPUTS                                , DESCRIPTION                        , STATUS 
+  A  ,  Step1      , "Source 1, Source 2"       , "Derived 1, QC check"                 , "This might be latitude and longitude of sites"     ,  DONE
+  A  ,  Step2      , Source 3                  , Derived 2                           , This might be weather data               , DONE
+  B  ,  Step3      , "Derived 1, Derived 2"      , Derived 3                             , Merging these data means they can be analysed   , TODO
+  C  ,  Step4      , Derived 3                 , Model selection                              ,                                    , TODO
+  C  ,  Step5      , Model selection           , Sensitivity analysis                         ,                                    , TODO
+  '), stringsAsFactors = F, strip.white = T)
+  
+  dat <- steps[,c("STEP", "INPUTS", "OUTPUTS", "DESCRIPTION", "STATUS")]
+  library(xtable)
+  tabcode <- xtable(dat, caption = 'A table with the steps of a simple data analysis pipeline', label = 'tab:TablePipe1')
+  align(tabcode) <-  c( 'l', 'p{.6in}','p{1.3in}','p{1.2in}', 'p{2in}','p{1in}' )
+  print(tabcode,  include.rownames = F, table.placement = '!ht',
+   caption.placement = 'top', comment = F) #, type = "html")
+  
+  ```
+  
+  
+  
+  ```{r echo=F, eval=F}
+  library(disentangle); library(stringr)
+  nodes <- newnode(indat = steps,   names_col = "STEP", in_col = "INPUTS",
+    out_col = "OUTPUTS", desc_col = 'DESCRIPTION', todo_col = "STATUS",
+    nchar_to_snip = 70)
+  sink("steps-fig1.dot"); cat(nodes); sink()
+  #DiagrammeR::grViz("steps-fig1.dot")
+  system("dot -Tpdf steps-fig1.dot -o steps-fig1.pdf")
+  
+  ```
+  
+  
+  
+  \begin{figure}[!h]
+  \centering
+  \includegraphics[width=\textwidth]{steps-fig1.pdf}
+  \caption{A visualisation of a data analysis pipeline showing the use of colour}
+  \label{fig:FigSteps}
+  \end{figure}
+  
+  \clearpage
+  
+  
+  
+#+end_src
+* bib
+#+name:bib
+#+begin_src R :session *R* :tangle manuscript_template.Rmd :exports none :eval no
+
+  **References**
+
+  ```{r, echo=FALSE, message=FALSE, eval = T}
+  write.bibtex(file="references.bib")
+  ```
+
+#+end_src

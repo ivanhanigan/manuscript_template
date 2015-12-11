@@ -1,0 +1,31 @@
+digraph transformations {
+
+  "Source 1" -> "Step1"
+"Source 2" -> "Step1"
+"Step1"  [ shape=record, label="{{ { Name | Description | Status } | { Step1 | This might be latitude and longitude of sites | DONE } }}"]
+"Step1" -> "Derived 1"
+"Step1" -> "QC check"
+
+ 
+ "Source 3" -> "Step2"
+"Step2"  [ shape=record, label="{{ { Name | Description | Status } | { Step2 | This might be weather data | DONE } }}"]
+"Step2" -> "Derived 2"
+
+ 
+ "Derived 1" -> "Step3"
+"Derived 2" -> "Step3"
+"Step3"  [ shape=record, style = "filled", color="indianred", label="{{ { Name | Description | Status } | { Step3 | Merging these data means they can be analysed | TODO } }}"]
+"Step3" -> "Derived 3"
+
+ 
+ "Derived 3" -> "Step4"
+"Step4"  [ shape=record, style = "filled", color="indianred", label="{{ { Name | Description | Status } | { Step4 |  | TODO } }}"]
+"Step4" -> "Model selection"
+
+ 
+ "Model selection" -> "Step5"
+"Step5"  [ shape=record, style = "filled", color="indianred", label="{{ { Name | Description | Status } | { Step5 |  | TODO } }}"]
+"Step5" -> "Sensitivity analysis"
+
+ 
+ }
